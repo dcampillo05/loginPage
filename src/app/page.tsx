@@ -1,7 +1,8 @@
+import Login from "./login/page";
 
 
 export default function Home() {
   return (
-    <div>Logged in</div>
+    <div><Login /></div>
   );
 }
