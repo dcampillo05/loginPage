@@ -5,6 +5,8 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
     email: z.string({
@@ -22,6 +24,7 @@ const formSchema = z.object({
 
 export const LoginForm = () => {
 
+    const router = useRouter()
     const form = useForm<z.infer<typeof formSchema>>({
 
         resolver: zodResolver(formSchema),
@@ -33,7 +36,27 @@ export const LoginForm = () => {
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        console.log(values);
+        try {
+            const supabase = createClientComponentClient()
+            const { email, password } = values;
+            const { error, data: { session } } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
+
+            if (error) {
+                console.error("Error logging in: ", error.message)
+            } else if (session) {
+                console.log("Login successful, session: ", session)
+                form.reset()
+                router.replace("/user-app")
+            } else {
+                console.error("No session found.")
+            }
+
+        } catch {
+            console.log("loginForm", Error)
+        }
     }
 
     return <div className="flex flex-col h-screen w-full justify-center items-center">
@@ -98,7 +121,7 @@ export const LoginForm = () => {
                         )} />
 
                         <div className="flex items-center p-6 pt-8">
-                            <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">Create account</button>
+                            <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">Entrar</button>
                         </div>
 
                     </form>
@@ -107,7 +130,7 @@ export const LoginForm = () => {
             </div>
 
             <div className="font-light text-center mt-[-30px]">
-                <p>Não possui conta? <a className="text-[#1d9bf0] hover:underline hover:decoration-[#1d9bf0]" href="/singup">Cadastre-se</a></p>
+                <p>Não possui conta? <a className="text-[#1d9bf0] hover:underline hover:decoration-[#1d9bf0]" href="/singup">Entrar</a></p>
             </div>
 
         </div>

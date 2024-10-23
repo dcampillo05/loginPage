@@ -8,27 +8,23 @@ import { LoginForm } from "../../components/auth/loginForm";
 
 export default async function Home() {
 
-  let loggedIn = false
+  const supabase = createServerComponentClient({ cookies });
 
-
-  // Caso exista um sessão, o login será alterado p/ True. O metodo foi criado p/ evitar erro de direcionamento durante o codigo
   try {
+    // Obtém a sessão atual
+    const { data: { session } } = await supabase.auth.getSession();
 
-    const supabase = createServerComponentClient({ cookies })
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (session) loggedIn = true
+    // Se houver sessão, redireciona para /user-app
+    if (session) {
+      redirect("/user-app");
+    }
 
   } catch (error) {
-    console.log("Home", error)
-  }// finally {
-  //   if (loggedIn) redirect("/user-app", RedirectType.replace)
-  // }
-
+    console.error("Erro ao verificar sessão:", error);
+    // Você pode exibir uma mensagem de erro ou lidar com o erro de outra forma
+  }
   return (
-    <LoginForm />
+    <div><LoginForm /></div>
   )
 
 }
